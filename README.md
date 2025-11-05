@@ -1,0 +1,1 @@
+# blazor-auto-clean-arch
