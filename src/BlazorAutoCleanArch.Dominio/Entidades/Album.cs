@@ -9,6 +9,8 @@ public class Album : Entity
     public DateTime DataLancamento { get; protected set; }
     public Artista Artista { get; protected set; } = default!;
 
+    public Album() { }
+
     public Album(string nome, DateTime dataLancamento, Artista artista)
     {
         SetNome(nome);

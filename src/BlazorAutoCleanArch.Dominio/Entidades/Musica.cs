@@ -8,6 +8,8 @@ public class Musica : Entity
     public string Nome { get; protected set; } = string.Empty;
     public Album Album { get; protected set; } = default!;
 
+    public Musica() { }
+
     public Musica(string nome, Album album)
     {
         SetNome(nome);

@@ -8,6 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\BlazorAutoCleanArch.Aplicacao\BlazorAutoCleanArch.Aplicacao.csproj" />
+    <ProjectReference Include="..\..\BlazorAutoCleanArch.Dominio\BlazorAutoCleanArch.Dominio.csproj" />
+    <ProjectReference Include="..\..\BlazorAutoCleanArch.Infra\BlazorAutoCleanArch.Infra.csproj" />
     <ProjectReference Include="..\BlazorAutoCleanArch.WebApp.Client\BlazorAutoCleanArch.WebApp.Client.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.21" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.21" />

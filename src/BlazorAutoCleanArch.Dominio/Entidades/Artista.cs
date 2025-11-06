@@ -10,6 +10,8 @@ public class Artista : Entity
     public GeneroMusicalArtistaEnum GeneroMusical { get; protected set; }
     public StatusArtistaEnum Status { get; protected set; }
 
+    public Artista() { }
+
     public Artista(string nome, GeneroMusicalArtistaEnum generoMusical)
     {
         SetNome(nome);

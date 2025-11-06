@@ -1,3 +1,9 @@
+using BlazorAutoCleanArch.Aplicacao.Servicos;
+using BlazorAutoCleanArch.Aplicacao.Servicos.Interfaces;
+using BlazorAutoCleanArch.Dominio.Interfaces;
+using BlazorAutoCleanArch.Infra;
+using BlazorAutoCleanArch.Infra.Contexts;
+using BlazorAutoCleanArch.Infra.Repositorios;
 using BlazorAutoCleanArch.WebApp.Client.Pages;
 using BlazorAutoCleanArch.WebApp.Components;
 using BlazorAutoCleanArch.WebApp.Components.Account;
@@ -8,7 +14,6 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
@@ -19,15 +24,19 @@ builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAuthenticationStateProvider>();
 
 builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultScheme = IdentityConstants.ApplicationScheme;
-        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-    })
-    .AddIdentityCookies();
+{
+    options.DefaultScheme = IdentityConstants.ApplicationScheme;
+    options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+})
+.AddIdentityCookies();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlite(connectionString));
+
+builder.Services.AddDbContext<AplicacaoDbContext>(options =>
+    options.UseSqlite(connectionString));
+
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
@@ -36,6 +45,10 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
     .AddDefaultTokenProviders();
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IArtistasAppServico, ArtistasAppServico>();
+builder.Services.AddScoped<IArtistasRepositorio, ArtistasRepositorio>();
 
 var app = builder.Build();
 
@@ -62,7 +75,6 @@ app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(BlazorAutoCleanArch.WebApp.Client._Imports).Assembly);
 
-// Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
 
 app.Run();
