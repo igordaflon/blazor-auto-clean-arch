@@ -3,14 +3,29 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace BlazorAutoCleanArch.WebApp.Data.Migrations
+namespace BlazorAutoCleanArch.Infra.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateIdentitySchema : Migration
+    public partial class MigrationInicial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Artista",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Nome = table.Column<string>(type: "varchar(50)", nullable: false),
+                    GeneroMusical = table.Column<int>(type: "INTEGER", nullable: false),
+                    Status = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Artista", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
@@ -48,6 +63,26 @@ namespace BlazorAutoCleanArch.WebApp.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Album",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Nome = table.Column<string>(type: "varchar(50)", nullable: false),
+                    DataLancamento = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    ArtistaId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Album", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Album_Artista_ArtistaId",
+                        column: x => x.ArtistaId,
+                        principalTable: "Artista",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -156,6 +191,71 @@ namespace BlazorAutoCleanArch.WebApp.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Playlists",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Nome = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    UsuarioId = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Playlists", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Playlists_AspNetUsers_UsuarioId",
+                        column: x => x.UsuarioId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Musica",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Nome = table.Column<string>(type: "varchar(50)", nullable: false),
+                    AlbumId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Musica", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Musica_Album_AlbumId",
+                        column: x => x.AlbumId,
+                        principalTable: "Album",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MusicaPlaylist",
+                columns: table => new
+                {
+                    MusicasId = table.Column<int>(type: "INTEGER", nullable: false),
+                    PlaylistsId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MusicaPlaylist", x => new { x.MusicasId, x.PlaylistsId });
+                    table.ForeignKey(
+                        name: "FK_MusicaPlaylist_Musica_MusicasId",
+                        column: x => x.MusicasId,
+                        principalTable: "Musica",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_MusicaPlaylist_Playlists_PlaylistsId",
+                        column: x => x.PlaylistsId,
+                        principalTable: "Playlists",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Album_ArtistaId",
+                table: "Album",
+                column: "ArtistaId");
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -192,6 +292,21 @@ namespace BlazorAutoCleanArch.WebApp.Data.Migrations
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Musica_AlbumId",
+                table: "Musica",
+                column: "AlbumId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MusicaPlaylist_PlaylistsId",
+                table: "MusicaPlaylist",
+                column: "PlaylistsId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Playlists_UsuarioId",
+                table: "Playlists",
+                column: "UsuarioId");
         }
 
         /// <inheritdoc />
@@ -213,10 +328,25 @@ namespace BlazorAutoCleanArch.WebApp.Data.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "MusicaPlaylist");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
+                name: "Musica");
+
+            migrationBuilder.DropTable(
+                name: "Playlists");
+
+            migrationBuilder.DropTable(
+                name: "Album");
+
+            migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Artista");
         }
     }
 }

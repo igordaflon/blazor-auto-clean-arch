@@ -4,10 +4,8 @@ using BlazorAutoCleanArch.Dominio.Interfaces;
 using BlazorAutoCleanArch.Infra;
 using BlazorAutoCleanArch.Infra.Contexts;
 using BlazorAutoCleanArch.Infra.Repositorios;
-using BlazorAutoCleanArch.WebApp.Client.Pages;
 using BlazorAutoCleanArch.WebApp.Components;
 using BlazorAutoCleanArch.WebApp.Components.Account;
-using BlazorAutoCleanArch.WebApp.Data;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -32,9 +30,6 @@ builder.Services.AddAuthentication(options =>
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(connectionString));
-
-builder.Services.AddDbContext<AplicacaoDbContext>(options =>
     options.UseSqlite(connectionString));
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();

@@ -6,10 +6,10 @@ namespace BlazorAutoCleanArch.Infra;
 
 public class UnitOfWork : IUnitOfWork
 {
-    private readonly AplicacaoDbContext _dbContext;
+    private readonly ApplicationDbContext _dbContext;
     private IDbContextTransaction? _transaction;
 
-    public UnitOfWork(AplicacaoDbContext dbContext)
+    public UnitOfWork(ApplicationDbContext dbContext)
     {
         _dbContext = dbContext;
     }

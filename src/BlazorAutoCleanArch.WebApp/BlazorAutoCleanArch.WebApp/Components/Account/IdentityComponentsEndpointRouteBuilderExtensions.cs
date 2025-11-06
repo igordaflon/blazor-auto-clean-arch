@@ -1,8 +1,8 @@
 using System.Security.Claims;
 using System.Text.Json;
+using BlazorAutoCleanArch.Infra.Contexts;
 using BlazorAutoCleanArch.WebApp.Components.Account.Pages;
 using BlazorAutoCleanArch.WebApp.Components.Account.Pages.Manage;
-using BlazorAutoCleanArch.WebApp.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;

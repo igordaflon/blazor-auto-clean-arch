@@ -1,11 +1,12 @@
-﻿using BlazorAutoCleanArch.Dominio.Entidades;
+using BlazorAutoCleanArch.Dominio.Entidades;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace BlazorAutoCleanArch.Infra.Contexts;
 
-public class AplicacaoDbContext : DbContext
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
-    public AplicacaoDbContext(DbContextOptions<AplicacaoDbContext> options) : base(options)
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
         ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         ChangeTracker.AutoDetectChangesEnabled = false;
@@ -14,12 +15,13 @@ public class AplicacaoDbContext : DbContext
     public DbSet<Artista> Artistas { get; set; }
     public DbSet<Album> Albums { get; set; }
     public DbSet<Musica> Musicas { get; set; }
+    public DbSet<Playlist> Playlists { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AplicacaoDbContext).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
-        foreach (var relationship in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys())) 
+        foreach (var relationship in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
             relationship.DeleteBehavior = DeleteBehavior.ClientSetNull;
 
         base.OnModelCreating(modelBuilder);

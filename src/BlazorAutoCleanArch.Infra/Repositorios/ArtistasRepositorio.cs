@@ -7,5 +7,5 @@ namespace BlazorAutoCleanArch.Infra.Repositorios;
 
 public class ArtistasRepositorio : RepositorioBase<Artista>, IArtistasRepositorio
 {
-    public ArtistasRepositorio(AplicacaoDbContext dbContext) : base(dbContext){}
+    public ArtistasRepositorio(ApplicationDbContext dbContext) : base(dbContext){}
 }

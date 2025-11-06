@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Security.Claims;
+using BlazorAutoCleanArch.Infra.Contexts;
 using BlazorAutoCleanArch.WebApp.Client;
-using BlazorAutoCleanArch.WebApp.Data;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;

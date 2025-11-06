@@ -7,10 +7,10 @@ namespace BlazorAutoCleanArch.Infra.Repositorios.Base;
 
 public abstract class RepositorioBase<T> : IRepositorioBase<T> where T : Entity, new()
 {
-    protected readonly AplicacaoDbContext DbContext;
+    protected readonly ApplicationDbContext DbContext;
     protected readonly DbSet<T> DbSet;
 
-    protected RepositorioBase(AplicacaoDbContext dbContext)
+    protected RepositorioBase(ApplicationDbContext dbContext)
     {
         DbContext = dbContext;
         DbSet = dbContext.Set<T>();
