@@ -3,6 +3,184 @@
 @attribute [Authorize]
 @rendermode InteractiveServer
 
+<style>
+    article.px-4 {
+        padding: 0 !important;
+    }
+
+    .criar-playlist-page {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+    }
+
+    .criar-playlist-header {
+        background: linear-gradient(135deg, #512bd4 0%, #8b5cf6 50%, #3b82f6 100%);
+        min-height: 200px;
+        width: 100%;
+    }
+
+    .criar-playlist-content {
+        min-height: calc(100vh - 200px);
+        background: linear-gradient(180deg, rgba(81, 43, 212, 0.15) 0%, #0d1117 20%);
+        width: 100%;
+    }
+
+    .bg-body-secondary {
+        background-color: #1a1d29 !important;
+    }
+
+    .cover-placeholder {
+        width: 50%;
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #512bd4 0%, #8b5cf6 100%);
+    }
+
+        .cover-placeholder i {
+            font-size: 4rem;
+        }
+
+    .form-control {
+        background-color: #0d1117 !important;
+        border: 1px solid transparent !important;
+    }
+
+        .form-control:focus {
+            background-color: #0d1117 !important;
+            border-color: #512bd4 !important;
+            box-shadow: 0 0 0 0.2rem rgba(81, 43, 212, 0.25);
+            color: white !important;
+        }
+
+    .nav-tabs {
+        border-bottom: 1px solid #252a3a;
+    }
+
+        .nav-tabs .nav-link {
+            color: rgba(255, 255, 255, 0.7);
+            border: none;
+            background: transparent;
+            padding: 0.75rem 1.5rem;
+            border-bottom: 2px solid transparent;
+        }
+
+            .nav-tabs .nav-link:hover {
+                color: white;
+                border-bottom-color: #512bd4;
+            }
+
+            .nav-tabs .nav-link.active {
+                color: white;
+                background: transparent;
+                border-bottom-color: #512bd4;
+            }
+
+    .musicas-lista {
+        max-height: 600px;
+        overflow-y: auto;
+        padding-right: 10px;
+    }
+
+        .musicas-lista::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .musicas-lista::-webkit-scrollbar-track {
+            background: #0d1117;
+            border-radius: 4px;
+        }
+
+        .musicas-lista::-webkit-scrollbar-thumb {
+            background: #512bd4;
+            border-radius: 4px;
+        }
+
+    .musica-item {
+        transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+
+        .musica-item:hover {
+            background-color: #252a3a !important;
+            transform: translateX(4px);
+        }
+
+    .musica-capa {
+        width: 56px;
+        height: 56px;
+        object-fit: cover;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #512bd4 0%, #8b5cf6 100%);
+        border: none;
+    }
+
+        .btn-primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, #6d3aea 0%, #a78bfa 100%);
+            transform: scale(1.02);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+    .btn-outline-primary {
+        border-color: #512bd4;
+        color: #8b5cf6;
+    }
+
+        .btn-outline-primary:hover {
+            background: linear-gradient(135deg, #512bd4 0%, #8b5cf6 100%);
+            border-color: #512bd4;
+            color: white;
+        }
+
+    .btn-outline-secondary {
+        border-color: #6c757d;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+        .btn-outline-secondary:hover {
+            background-color: #6c757d;
+            color: white;
+        }
+
+    .btn-outline-danger {
+        border-color: #dc3545;
+        color: #dc3545;
+    }
+
+        .btn-outline-danger:hover {
+            background-color: #dc3545;
+            color: white;
+        }
+
+    .text-white-50 {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .input-group-text {
+        background-color: #0d1117 !important;
+    }
+
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #512bd4 0%, #8b5cf6 100%);
+    }
+
+    .btn-link {
+        text-decoration: none;
+    }
+
+        .btn-link:hover {
+            text-decoration: underline;
+        }
+
+</style>
+
 <div class="criar-playlist-page">
     <!-- Header -->
     <div class="criar-playlist-header bg-gradient p-5">
@@ -201,187 +379,6 @@
         </div>
     </div>
 </div>
-
-<style>
-    article.px-4 {
-        padding: 0 !important;
-    }
-
-    .criar-playlist-page {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-    }
-
-    .criar-playlist-header {
-        background: linear-gradient(135deg, #512bd4 0%, #8b5cf6 50%, #3b82f6 100%);
-        min-height: 200px;
-        width: 100%;
-    }
-
-    .criar-playlist-content {
-        min-height: calc(100vh - 200px);
-        background: linear-gradient(180deg, rgba(81, 43, 212, 0.15) 0%, #0d1117 20%);
-        width: 100%;
-    }
-
-    .bg-body-secondary {
-        background-color: #1a1d29 !important;
-    }
-
-    .playlist-cover-preview {
-        aspect-ratio: 1;
-    }
-
-    .cover-placeholder {
-        width: 100%;
-        aspect-ratio: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, #512bd4 0%, #8b5cf6 100%);
-    }
-
-        .cover-placeholder i {
-            font-size: 4rem;
-        }
-
-    .form-control {
-        background-color: #0d1117 !important;
-        border: 1px solid transparent !important;
-    }
-
-        .form-control:focus {
-            background-color: #0d1117 !important;
-            border-color: #512bd4 !important;
-            box-shadow: 0 0 0 0.2rem rgba(81, 43, 212, 0.25);
-            color: white !important;
-        }
-
-    .nav-tabs {
-        border-bottom: 1px solid #252a3a;
-    }
-
-        .nav-tabs .nav-link {
-            color: rgba(255, 255, 255, 0.7);
-            border: none;
-            background: transparent;
-            padding: 0.75rem 1.5rem;
-            border-bottom: 2px solid transparent;
-        }
-
-            .nav-tabs .nav-link:hover {
-                color: white;
-                border-bottom-color: #512bd4;
-            }
-
-            .nav-tabs .nav-link.active {
-                color: white;
-                background: transparent;
-                border-bottom-color: #512bd4;
-            }
-
-    .musicas-lista {
-        max-height: 600px;
-        overflow-y: auto;
-        padding-right: 10px;
-    }
-
-        .musicas-lista::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .musicas-lista::-webkit-scrollbar-track {
-            background: #0d1117;
-            border-radius: 4px;
-        }
-
-        .musicas-lista::-webkit-scrollbar-thumb {
-            background: #512bd4;
-            border-radius: 4px;
-        }
-
-    .musica-item {
-        transition: background-color 0.2s ease, transform 0.2s ease;
-    }
-
-        .musica-item:hover {
-            background-color: #252a3a !important;
-            transform: translateX(4px);
-        }
-
-    .musica-capa {
-        width: 56px;
-        height: 56px;
-        object-fit: cover;
-    }
-
-    .btn-primary {
-        background: linear-gradient(135deg, #512bd4 0%, #8b5cf6 100%);
-        border: none;
-    }
-
-        .btn-primary:hover:not(:disabled) {
-            background: linear-gradient(135deg, #6d3aea 0%, #a78bfa 100%);
-            transform: scale(1.02);
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-    .btn-outline-primary {
-        border-color: #512bd4;
-        color: #8b5cf6;
-    }
-
-        .btn-outline-primary:hover {
-            background: linear-gradient(135deg, #512bd4 0%, #8b5cf6 100%);
-            border-color: #512bd4;
-            color: white;
-        }
-
-    .btn-outline-secondary {
-        border-color: #6c757d;
-        color: rgba(255, 255, 255, 0.7);
-    }
-
-        .btn-outline-secondary:hover {
-            background-color: #6c757d;
-            color: white;
-        }
-
-    .btn-outline-danger {
-        border-color: #dc3545;
-        color: #dc3545;
-    }
-
-        .btn-outline-danger:hover {
-            background-color: #dc3545;
-            color: white;
-        }
-
-    .text-white-50 {
-        color: rgba(255, 255, 255, 0.7);
-    }
-
-    .input-group-text {
-        background-color: #0d1117 !important;
-    }
-
-    .bg-gradient-primary {
-        background: linear-gradient(135deg, #512bd4 0%, #8b5cf6 100%);
-    }
-
-    .btn-link {
-        text-decoration: none;
-    }
-
-        .btn-link:hover {
-            text-decoration: underline;
-        }
-</style>
 
 @code {
     [Parameter]

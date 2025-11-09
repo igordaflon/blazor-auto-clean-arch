@@ -2,6 +2,6 @@
 
 namespace BlazorAutoCleanArch.Dominio.Interfaces;
 
-public interface IArtistasRepositorio : IRepositorioBase<Artista>
+public interface IPlaylistsRepositorio : IRepositorioBase<Playlist>
 {
 }

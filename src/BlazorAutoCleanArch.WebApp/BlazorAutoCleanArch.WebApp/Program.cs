@@ -42,8 +42,10 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IArtistasAppServico, ArtistasAppServico>();
-builder.Services.AddScoped<IArtistasRepositorio, ArtistasRepositorio>();
+builder.Services.AddScoped<IPlaylistsAppServico, PlaylistsAppServico>();
+builder.Services.AddScoped<IPlaylistsRepositorio, PlaylistsRepositorio>();
+
+builder.Services.AddAutoMapper(typeof(PlaylistsAppServico).Assembly);
 
 var app = builder.Build();
 

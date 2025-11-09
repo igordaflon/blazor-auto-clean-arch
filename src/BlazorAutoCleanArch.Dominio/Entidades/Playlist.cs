@@ -12,10 +12,11 @@ public class Playlist : Entity
 
     public Playlist() { }
 
-    public Playlist(string nome, string usuarioId)
+    public Playlist(string nome, string usuarioId, IEnumerable<Musica> musicas)
     {
         SetNome(nome);
         SetUsuarioId(usuarioId);
+        SetMusicas(musicas);
     }
 
     public void SetNome(string nome)
@@ -35,5 +36,10 @@ public class Playlist : Entity
             throw new Exception("Usuário obrigatório");
 
         UsuarioId = usuarioId;
+    }
+
+    public void SetMusicas(IEnumerable<Musica> musicas)
+    {
+        Musicas = new HashSet<Musica>(musicas);
     }
 }

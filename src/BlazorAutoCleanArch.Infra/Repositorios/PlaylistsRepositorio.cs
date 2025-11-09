@@ -5,7 +5,7 @@ using BlazorAutoCleanArch.Infra.Repositorios.Base;
 
 namespace BlazorAutoCleanArch.Infra.Repositorios;
 
-public class ArtistasRepositorio : RepositorioBase<Artista>, IArtistasRepositorio
+public class PlaylistsRepositorio : RepositorioBase<Playlist>, IPlaylistsRepositorio
 {
-    public ArtistasRepositorio(ApplicationDbContext dbContext) : base(dbContext){}
+    public PlaylistsRepositorio(ApplicationDbContext dbContext) : base(dbContext){}
 }

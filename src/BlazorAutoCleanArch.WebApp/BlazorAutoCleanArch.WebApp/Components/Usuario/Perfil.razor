@@ -4,6 +4,7 @@
 @using Microsoft.AspNetCore.Components
 @attribute [Authorize]
 @inject NavigationManager NavigationManager
+@rendermode InteractiveServer
 
 <div class="profile-page">
     <!-- Header com foto de perfil e nome -->
@@ -13,7 +14,6 @@
                 <div class="row align-items-end">
                     <div class="col-auto">
                         <img src="@GravatarHelper.ObterGravatarUrl(context.User.Identity?.Name ?? "", 400)"
-                             alt="@context.User.Identity?.Name
                              height="200"
                              width="200"
                              class="profile-image shadow-lg rounded-circle me-2" />
@@ -49,27 +49,28 @@
                     @foreach (var playlist in playlists)
                     {
                         <div class="col">
-                            <div class="playlist-card bg-body-secondary rounded-3 p-3 h-100
-                                                            transition-transform"
-                                 @onclick="() => AbrirPlaylist(playlist.Id)">
-                                <div class="playlist-cover mb-3 position-relative">
-                                    <img src="@playlist.ImageUrl"
-                                         alt="@playlist.Nome"
-                                         class="w-100 rounded-2 shadow" />
-                                    <div class="play-button position-absolute bottom-0 end-0 m-2
-                                                                    opacity-0 transition-opacity">
-                                        <button class="btn btn-primary rounded-circle p-3 shadow">
-                                            <i class="bi bi-play-fill fs-5"></i>
-                                        </button>
+                            <a href="@($"/playlist/{playlist.Id}")" class="text-decoration-none">
+                                <div class="playlist-card bg-body-secondary rounded-3 p-3 h-100
+                                                                        transition-transform">
+                                    <div class="playlist-cover mb-3 position-relative">
+                                        <img src="@playlist.ImageUrl"
+                                             alt="@playlist.Nome"
+                                             class="w-100 rounded-2 shadow" />
+                                        <div class="play-button position-absolute bottom-0 end-0 m-2
+                                                                                opacity-0 transition-opacity">
+                                            <div class="btn btn-primary rounded-circle p-3 shadow">
+                                                <i class="bi bi-play-fill fs-5"></i>
+                                            </div>
+                                        </div>
                                     </div>
+                                    <h3 class="h6 text-white fw-semibold mb-2 text-truncate">
+                                        @playlist.Nome
+                                    </h3>
+                                    <p class="small text-white-50 mb-0 playlist-description">
+                                        @playlist.Descricao
+                                    </p>
                                 </div>
-                                <h3 class="h6 text-white fw-semibold mb-2 text-truncate">
-                                    @playlist.Nome
-                                </h3>
-                                <p class="small text-white-50 mb-0 playlist-description">
-                                    @playlist.Descricao
-                                </p>
-                            </div>
+                            </a>
                         </div>
                     }
                 </div>
@@ -201,12 +202,6 @@
     private void CriarPlaylist()
     {
         NavigationManager.NavigateTo($"/usuario/{Id}/playlist/nova");
-    }
-
-    private void AbrirPlaylist(string playlistId)
-    {
-        // TODO: Implementar navegação para página da playlist
-        Console.WriteLine($"Abrir playlist: {playlistId}");
     }
 
     private class PlaylistModel
