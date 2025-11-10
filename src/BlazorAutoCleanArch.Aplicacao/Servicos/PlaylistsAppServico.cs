@@ -32,6 +32,13 @@ public class PlaylistsAppServico : IPlaylistsAppServico
         return _mapper.Map<IReadOnlyList<PlaylistListarResponse>>(playlists);
     }
 
+    public async Task<PlaylistListarResponse> ObterPorIdAsync(int id)
+    {
+        var playlist = await _playlistsRepositorio.ObterPorIdAsync(id);
+
+        return _mapper.Map<PlaylistListarResponse>(playlist);
+    }
+
     public async Task InserirAsync(PlaylistInserirRequest request, string usuarioId)
     {
         try
@@ -48,7 +55,7 @@ public class PlaylistsAppServico : IPlaylistsAppServico
                     $"Músicas não encontradas: {string.Join(", ", idsNaoEncontrados)}");
             }
 
-            var playlist = new Playlist(request.Nome, usuarioId, musicasExistentes);
+            var playlist = new Playlist(request.Nome, request.Descricao, usuarioId, musicasExistentes);
 
             await _playlistsRepositorio.InserirAsync(playlist);
 

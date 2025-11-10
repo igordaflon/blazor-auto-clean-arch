@@ -6,14 +6,16 @@ namespace BlazorAutoCleanArch.Dominio.Entidades;
 public class Musica : Entity
 {
     public string Nome { get; protected set; } = string.Empty;
+    public TimeSpan Duracao { get; protected set; }
     public Album Album { get; protected set; } = default!;
     public IReadOnlySet<Playlist> Playlists { get; protected set; } = new HashSet<Playlist>();
 
     public Musica() { }
 
-    public Musica(string nome, Album album)
+    public Musica(string nome, TimeSpan duracao, Album album)
     {
         SetNome(nome);
+        SetDuracao(duracao);
         SetAlbum(album);
     }
 
@@ -26,6 +28,17 @@ public class Musica : Entity
             throw new TamanhoDeAtributoInvalidoExcecao("Nome", 0, 50);
 
         Nome = nome;
+    }
+
+    public void SetDuracao(TimeSpan duracao)
+    {
+        if (duracao <= TimeSpan.Zero)
+            throw new InvalidOperationException("Duração deve ser maior que zero");
+
+        if (duracao > TimeSpan.FromHours(2))
+            throw new InvalidOperationException("Duração não pode exceder 2 horas");
+
+        Duracao = duracao;
     }
 
     public virtual void SetAlbum(Album album)

@@ -7,4 +7,5 @@ public interface IPlaylistsAppServico
 {
     Task InserirAsync(PlaylistInserirRequest request, string usuarioId);
     Task<IReadOnlyList<PlaylistListarResponse>> ListarPlaylistsDoUsuarioAsync(string usuarioId);
+    Task<PlaylistListarResponse> ObterPorIdAsync(int id);
 }

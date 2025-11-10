@@ -1,11 +1,14 @@
 ﻿@page "/usuario/{Id}/playlist/nova"
 @using System.ComponentModel.DataAnnotations
 @using BlazorAutoCleanArch.Aplicacao.DTOs.Requests
+@using BlazorAutoCleanArch.Aplicacao.DTOs.Responses
 @using BlazorAutoCleanArch.Aplicacao.Servicos.Interfaces
 @using Microsoft.AspNetCore.Authorization
+@using System.Threading.Tasks
 @attribute [Authorize]
 @rendermode InteractiveServer
 @inject IPlaylistsAppServico PlaylistsAppServico
+@inject IMusicasAppServico _musicasAppServico
 @inject NavigationManager NavigationManager
 @inject ILogger<NovaPlaylist> Logger
 
@@ -358,15 +361,15 @@
                                     }
                                     else
                                     {
-                                        @foreach (var musica in MusicasFiltradas())
-                                        {
-                                            <div class="musica-item bg-body-secondary rounded-3 p-3 mb-2 d-flex align-items-center">
-                                                <img src="@musica.CapaUrl" alt="@musica.Nome" class="musica-capa rounded me-3" />
+                                    @foreach (var musica in MusicasFiltradas())
+                                    {
+                                        <div class="musica-item bg-body-secondary rounded-3 p-3 mb-2 d-flex align-items-center">
+                                                <img src="@musica.Album.CapaUrl" alt="@musica.Nome" class="musica-capa rounded me-3" />
                                                 <div class="flex-grow-1">
                                                     <h6 class="text-white mb-1">@musica.Nome</h6>
-                                                    <p class="text-white-50 small mb-0">@musica.Artista • @musica.Album</p>
+                                                    <p class="text-white-50 small mb-0">@musica.Album.Artista.Nome • @musica.Album.Nome</p>
                                                 </div>
-                                                <span class="text-white-50 me-3">@musica.Duracao</span>
+                                                <span class="text-white-50 me-3">@FormatarDuracao(@musica.Duracao)</span>
                                                 @if (musicasSelecionadas.Any(m => m.Id == musica.Id))
                                                 {
                                                     <button type="button"
@@ -407,12 +410,12 @@
                                         {
                                             <div class="musica-item bg-body-secondary rounded-3 p-3 mb-2 d-flex align-items-center">
                                                 <span class="text-white-50 me-3">@(musicasSelecionadas.IndexOf(musica) + 1)</span>
-                                                <img src="@musica.CapaUrl" alt="@musica.Nome" class="musica-capa rounded me-3" />
+                                                <img src="@musica.Album.CapaUrl" alt="@musica.Nome" class="musica-capa rounded me-3" />
                                                 <div class="flex-grow-1">
                                                     <h6 class="text-white mb-1">@musica.Nome</h6>
-                                                    <p class="text-white-50 small mb-0">@musica.Artista • @musica.Album</p>
+                                                    <p class="text-white-50 small mb-0">@musica.Album.Artista.Nome • @musica.Album.Nome</p>
                                                 </div>
-                                                <span class="text-white-50 me-3">@musica.Duracao</span>
+                                                <span class="text-white-50 me-3">@FormatarDuracao(@musica.Duracao)</span>
                                                 <button type="button"
                                                         class="btn btn-outline-danger rounded-pill btn-sm"
                                                         @onclick="() => RemoverMusica(musica)">
@@ -440,44 +443,33 @@
     private string abaAtiva = "buscar";
     private string mensagemErro = string.Empty;
     private bool salvando = false;
-    private List<MusicaModel> musicasDisponiveis = new();
-    private List<MusicaModel> musicasSelecionadas = new();
+    private IReadOnlyList<MusicaListarResponse>? musicasDisponiveis;
+    private List<MusicaListarResponse> musicasSelecionadas = new();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        CarregarMusicasDisponiveis();
+        await CarregarMusicasDisponiveis();
     }
 
-    private void CarregarMusicasDisponiveis()
+    private async Task CarregarMusicasDisponiveis()
     {
-        // TODO: Implementar carregamento de músicas da API
-        musicasDisponiveis = new List<MusicaModel>
-        {
-            new() { Id = 1, Nome = "Bohemian Rhapsody", Artista = "Queen", Album = "A Night at the Opera", Duracao = "5:55", CapaUrl = "https://picsum.photos/56/56?random=1" },
-            new() { Id = 2, Nome = "Stairway to Heaven", Artista = "Led Zeppelin", Album = "Led Zeppelin IV", Duracao = "8:02", CapaUrl = "https://picsum.photos/56/56?random=2" },
-            new() { Id = 3, Nome = "Hotel California", Artista = "Eagles", Album = "Hotel California", Duracao = "6:30", CapaUrl = "https://picsum.photos/56/56?random=3" },
-            new() { Id = 4, Nome = "Imagine", Artista = "John Lennon", Album = "Imagine", Duracao = "3:03", CapaUrl = "https://picsum.photos/56/56?random=4" },
-            new() { Id = 5, Nome = "Smells Like Teen Spirit", Artista = "Nirvana", Album = "Nevermind", Duracao = "5:01", CapaUrl = "https://picsum.photos/56/56?random=5" },
-            new() { Id = 6, Nome = "Sweet Child O' Mine", Artista = "Guns N' Roses", Album = "Appetite for Destruction", Duracao = "5:56", CapaUrl = "https://picsum.photos/56/56?random=6" },
-            new() { Id = 7, Nome = "Yesterday", Artista = "The Beatles", Album = "Help!", Duracao = "2:05", CapaUrl = "https://picsum.photos/56/56?random=7" },
-            new() { Id = 8, Nome = "Nothing Else Matters", Artista = "Metallica", Album = "Metallica", Duracao = "6:28", CapaUrl = "https://picsum.photos/56/56?random=8" },
-        };
+        musicasDisponiveis = await _musicasAppServico.ListarTodasMusicasAsync();
     }
 
-    private List<MusicaModel> MusicasFiltradas()
+    private List<MusicaListarResponse> MusicasFiltradas()
     {
         if (string.IsNullOrWhiteSpace(termoBusca))
-            return new List<MusicaModel>();
+            return new List<MusicaListarResponse>();
 
         var termo = termoBusca.ToLower();
         return musicasDisponiveis
-            .Where(m => m.Nome.ToLower().Contains(termo) ||
-                       m.Artista.ToLower().Contains(termo) ||
-                       m.Album.ToLower().Contains(termo))
+            .Where(m => m.Nome.ToLower().Contains(termo)
+            || m.Album.Nome.ToLower().Contains(termo)
+            || m.Album.Artista.Nome.ToLower().Contains(termo))
             .ToList();
     }
 
-    private void AdicionarMusica(MusicaModel musica)
+    private void AdicionarMusica(MusicaListarResponse musica)
     {
         if (!musicasSelecionadas.Any(m => m.Id == musica.Id))
         {
@@ -485,9 +477,14 @@
         }
     }
 
-    private void RemoverMusica(MusicaModel musica)
+    private void RemoverMusica(MusicaListarResponse musica)
     {
         musicasSelecionadas.RemoveAll(m => m.Id == musica.Id);
+    }
+
+    private string FormatarDuracao(TimeSpan duracao)
+    {
+        return duracao.ToString(@"m\:ss");
     }
 
     private string CalcularDuracaoTotal()
@@ -495,9 +492,11 @@
         if (musicasSelecionadas.Count == 0)
             return "0:00";
 
-        // Simplificado - em produção, calcular duração real
-        var totalMinutos = musicasSelecionadas.Count * 4;
-        return $"{totalMinutos}:00";
+        var duracaoTotal = TimeSpan.FromSeconds(
+            musicasSelecionadas.Sum(m => m.Duracao.TotalSeconds)
+        );
+
+        return FormatarDuracao(duracaoTotal);
     }
 
     private async Task SalvarPlaylist()
@@ -534,16 +533,6 @@
 
     private void Cancelar()
     {
-        NavigationManager.NavigateTo("/usuario/perfil");
-    }
-
-    private class MusicaModel
-    {
-        public int Id { get; set; }
-        public string Nome { get; set; } = string.Empty;
-        public string Artista { get; set; } = string.Empty;
-        public string Album { get; set; } = string.Empty;
-        public string Duracao { get; set; } = string.Empty;
-        public string CapaUrl { get; set; } = string.Empty;
+        NavigationManager.NavigateTo($"/usuario/{Id}/perfil");
     }
 }

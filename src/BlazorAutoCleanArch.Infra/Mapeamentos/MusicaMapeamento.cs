@@ -14,6 +14,9 @@ public class MusicaMapeamento : IEntityTypeConfiguration<Musica>
             .IsRequired()
             .HasColumnType("varchar(50)");
 
+        builder.Property(m => m.Duracao)
+            .IsRequired();
+
         builder.HasOne(p => p.Album)
             .WithMany()
             .IsRequired();

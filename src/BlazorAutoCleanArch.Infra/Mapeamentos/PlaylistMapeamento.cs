@@ -16,6 +16,9 @@ namespace BlazorAutoCleanArch.Infra.Mapeamentos
                 .HasMaxLength(50)
                 .IsRequired();
 
+            builder.Property(p => p.Descricao)
+                .HasMaxLength(255);
+
             builder.Property(p => p.UsuarioId)
                 .IsRequired();
 

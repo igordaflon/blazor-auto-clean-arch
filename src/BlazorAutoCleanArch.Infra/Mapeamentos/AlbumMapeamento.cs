@@ -14,6 +14,9 @@ namespace BlazorAutoCleanArch.Infra.Mapeamentos
                 .IsRequired()
                 .HasColumnType("varchar(50)");
 
+            builder.Property(p => p.CapaUrl)
+                .IsRequired();
+
             builder.HasOne(p => p.Artista)
                 .WithMany()
                 .IsRequired();

@@ -6,14 +6,16 @@ namespace BlazorAutoCleanArch.Dominio.Entidades;
 public class Album : Entity
 {
     public string Nome { get; protected set; } = string.Empty;
+    public string CapaUrl { get; protected set; } = string.Empty;
     public DateTime DataLancamento { get; protected set; }
     public Artista Artista { get; protected set; } = default!;
 
     public Album() { }
 
-    public Album(string nome, DateTime dataLancamento, Artista artista)
+    public Album(string nome, string capaUrl, DateTime dataLancamento, Artista artista)
     {
         SetNome(nome);
+        SetCapaUrl(capaUrl);
         SetDataLancamento(dataLancamento);
         SetArtista(artista);
     }
@@ -21,12 +23,20 @@ public class Album : Entity
     public void SetNome(string nome)
     {
         if (string.IsNullOrWhiteSpace(nome))
-            throw new AtributoObrigatorioExcecao("Nome");
+            throw new AtributoObrigatorioExcecao(nameof(Nome));
 
         if (nome.Length > 50)
-            throw new TamanhoDeAtributoInvalidoExcecao("Nome", 0, 50);
+            throw new TamanhoDeAtributoInvalidoExcecao(nameof(Nome), 0, 50);
 
         Nome = nome;
+    }
+
+    public void SetCapaUrl(string capaUrl)
+    {
+        if (string.IsNullOrWhiteSpace(capaUrl))
+            throw new AtributoObrigatorioExcecao(nameof(CapaUrl));
+
+        CapaUrl = capaUrl;
     }
 
     public void SetDataLancamento(DateTime dataLancamento)

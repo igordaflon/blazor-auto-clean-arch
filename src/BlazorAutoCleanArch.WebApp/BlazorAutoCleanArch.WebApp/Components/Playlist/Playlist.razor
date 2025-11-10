@@ -1,7 +1,11 @@
 ﻿@page "/playlist/{IdPlaylist:int}"
+@using BlazorAutoCleanArch.Aplicacao.DTOs.Responses
 @using Microsoft.AspNetCore.Authorization
+@using System.Threading.Tasks
 @attribute [Authorize]
 @inject NavigationManager NavigationManager
+@inject IPlaylistsAppServico _playlistsAppServico
+@rendermode InteractiveServer
 
 <style>
         article.px-4 {
@@ -197,16 +201,14 @@
         <div class="container-fluid px-5">
             <div class="row align-items-end">
                 <div class="col-auto">
-                    <img src="@playlist.ImageUrl"
-                         alt="@playlist.Nome"
-                         class="playlist-cover shadow-lg" />
+                    <img src="https://picsum.photos/232/232?random=1" class="playlist-cover shadow-lg" />
                 </div>
                 <div class="col">
                     <p class="text-white-50 mb-2 small text-uppercase fw-semibold">Playlist</p>
                     <h1 class="display-3 fw-bold text-white mb-3">@playlist.Nome</h1>
                     <p class="text-white mb-3">@playlist.Descricao</p>
                     <div class="d-flex align-items-center text-white-50 small">
-                        <span class="fw-semibold text-white me-2">@playlist.Criador</span>
+                        <span class="fw-semibold text-white me-2">@playlist.UsuarioId</span>
                         <span>• @playlist.Musicas.Count músicas</span>
                         <span class="ms-2">• @CalcularDuracaoTotal()</span>
                     </div>
@@ -224,7 +226,7 @@
                     <i class="bi bi-play-fill"></i>
                 </button>
                 <button class="btn btn-outline-light rounded-circle" @onclick="ToggleFavorito">
-                    <i class="bi @(playlist.EhFavorita ? "bi-heart-fill" : "bi-heart")"></i>
+                    <i class="bi @(true ? "bi-heart-fill" : "bi-heart")"></i>
                 </button>
                 <button class="btn btn-outline-light rounded-circle" @onclick="Compartilhar">
                     <i class="bi bi-share"></i>
@@ -259,10 +261,10 @@
                 <!-- Músicas -->
                 @foreach (var (musica, index) in playlist.Musicas.Select((m, i) => (m, i + 1)))
                 {
-                    <div class="musica-row bg-body-secondary rounded-2 p-3 mb-2 @(musicaTocando?.Id == musica.Id ? "playing" : "")"
+                    <div class="musica-row bg-body-secondary rounded-2 p-3 mb-2 @(1 == musica.Id ? "playing" : "")"
                          @onclick="() => PlayMusica(musica)"
                          @onmouseenter="() => musicaHover = musica.Id"
-                         @onmouseleave="() => musicaHover = null">
+                         @onmouseleave="() => musicaHover = 0">
                         <div class="musica-col-numero">
                             @if (musicaTocando?.Id == musica.Id)
                             {
@@ -283,18 +285,18 @@
                         </div>
                         <div class="musica-col-titulo flex-grow-1">
                             <div class="d-flex align-items-center">
-                                <img src="@musica.CapaUrl" alt="@musica.Nome" class="musica-thumb rounded me-3" />
+                                <img src="@musica.Album.CapaUrl" alt="@musica.Nome" class="musica-thumb rounded me-3" />
                                 <div>
                                     <h6 class="text-white mb-0">@musica.Nome</h6>
-                                    <p class="text-white-50 small mb-0">@musica.Artista</p>
+                                    <p class="text-white-50 small mb-0">@musica.Album.Artista.Nome</p>
                                 </div>
                             </div>
                         </div>
                         <div class="musica-col-album d-none d-lg-block">
-                            <span class="text-white-50 small">@musica.Album</span>
+                            <span class="text-white-50 small">@musica.Album.Nome</span>
                         </div>
                         <div class="musica-col-data d-none d-xl-block">
-                            <span class="text-white-50 small">@musica.DataAdicionada.ToString("dd/MM/yyyy")</span>
+                            <span class="text-white-50 small">25/10/1121</span>
                         </div>
                         <div class="musica-col-duracao text-end">
                             <div class="d-flex align-items-center justify-content-end gap-2">
@@ -303,7 +305,7 @@
                                     <button class="btn btn-sm btn-link text-white-50 p-0"
                                             @onclick:stopPropagation="true"
                                             @onclick="() => ToggleFavoritoMusica(musica)">
-                                        <i class="bi @(musica.EhFavorita ? "bi-heart-fill" : "bi-heart")"></i>
+                                        <i class="bi @(true ? "bi-heart-fill" : "bi-heart")"></i>
                                     </button>
                                 }
                                 <span class="text-white-50 small">@musica.Duracao</span>
@@ -342,38 +344,40 @@
     [Parameter]
     public int IdPlaylist { get; set; }
 
-    private PlaylistDetalheModel playlist = new();
+    private PlaylistListarResponse playlist;
     private MusicaDetalheModel? musicaTocando;
-    private string? musicaHover;
+    private int musicaHover;
 
     protected override void OnInitialized()
     {
         CarregarPlaylist();
     }
 
-    private void CarregarPlaylist()
+    private async Task CarregarPlaylist()
     {
-        // TODO: Implementar carregamento da playlist da API
-        playlist = new PlaylistDetalheModel
-        {
-            Id = IdPlaylist,
-            Nome = "Rock Clássico",
-            Descricao = "Os maiores clássicos do rock de todos os tempos",
-            Criador = "Igor Daflon",
-            ImageUrl = "https://picsum.photos/232/232?random=1",
-            EhFavorita = false,
-            Musicas = new List<MusicaDetalheModel>
-            {
-                new() { Id = "1", Nome = "Bohemian Rhapsody", Artista = "Queen", Album = "A Night at the Opera", Duracao = "5:55", CapaUrl = "https://picsum.photos/40/40?random=1", DataAdicionada = DateTime.Now.AddDays(-10), EhFavorita = true },
-                new() { Id = "2", Nome = "Stairway to Heaven", Artista = "Led Zeppelin", Album = "Led Zeppelin IV", Duracao = "8:02", CapaUrl = "https://picsum.photos/40/40?random=2", DataAdicionada = DateTime.Now.AddDays(-9), EhFavorita = false },
-                new() { Id = "3", Nome = "Hotel California", Artista = "Eagles", Album = "Hotel California", Duracao = "6:30", CapaUrl = "https://picsum.photos/40/40?random=3", DataAdicionada = DateTime.Now.AddDays(-8), EhFavorita = true },
-                new() { Id = "4", Nome = "Imagine", Artista = "John Lennon", Album = "Imagine", Duracao = "3:03", CapaUrl = "https://picsum.photos/40/40?random=4", DataAdicionada = DateTime.Now.AddDays(-7), EhFavorita = false },
-                new() { Id = "5", Nome = "Smells Like Teen Spirit", Artista = "Nirvana", Album = "Nevermind", Duracao = "5:01", CapaUrl = "https://picsum.photos/40/40?random=5", DataAdicionada = DateTime.Now.AddDays(-6), EhFavorita = false },
-                new() { Id = "6", Nome = "Sweet Child O' Mine", Artista = "Guns N' Roses", Album = "Appetite for Destruction", Duracao = "5:56", CapaUrl = "https://picsum.photos/40/40?random=6", DataAdicionada = DateTime.Now.AddDays(-5), EhFavorita = true },
-                new() { Id = "7", Nome = "Yesterday", Artista = "The Beatles", Album = "Help!", Duracao = "2:05", CapaUrl = "https://picsum.photos/40/40?random=7", DataAdicionada = DateTime.Now.AddDays(-4), EhFavorita = false },
-                new() { Id = "8", Nome = "Nothing Else Matters", Artista = "Metallica", Album = "Metallica", Duracao = "6:28", CapaUrl = "https://picsum.photos/40/40?random=8", DataAdicionada = DateTime.Now.AddDays(-3), EhFavorita = false },
-            }
-        };
+        // // TODO: Implementar carregamento da playlist da API
+        // playlist = new PlaylistDetalheModel
+        // {
+        //     Id = IdPlaylist,
+        //     Nome = "Rock Clássico",
+        //     Descricao = "Os maiores clássicos do rock de todos os tempos",
+        //     Criador = "Igor Daflon",
+        //     ImageUrl = "https://picsum.photos/232/232?random=1",
+        //     EhFavorita = false,
+        //     Musicas = new List<MusicaDetalheModel>
+        //     {
+        //         new() { Id = "1", Nome = "Bohemian Rhapsody", Artista = "Queen", Album = "A Night at the Opera", Duracao = "5:55", CapaUrl = "https://picsum.photos/40/40?random=1", DataAdicionada = DateTime.Now.AddDays(-10), EhFavorita = true },
+        //         new() { Id = "2", Nome = "Stairway to Heaven", Artista = "Led Zeppelin", Album = "Led Zeppelin IV", Duracao = "8:02", CapaUrl = "https://picsum.photos/40/40?random=2", DataAdicionada = DateTime.Now.AddDays(-9), EhFavorita = false },
+        //         new() { Id = "3", Nome = "Hotel California", Artista = "Eagles", Album = "Hotel California", Duracao = "6:30", CapaUrl = "https://picsum.photos/40/40?random=3", DataAdicionada = DateTime.Now.AddDays(-8), EhFavorita = true },
+        //         new() { Id = "4", Nome = "Imagine", Artista = "John Lennon", Album = "Imagine", Duracao = "3:03", CapaUrl = "https://picsum.photos/40/40?random=4", DataAdicionada = DateTime.Now.AddDays(-7), EhFavorita = false },
+        //         new() { Id = "5", Nome = "Smells Like Teen Spirit", Artista = "Nirvana", Album = "Nevermind", Duracao = "5:01", CapaUrl = "https://picsum.photos/40/40?random=5", DataAdicionada = DateTime.Now.AddDays(-6), EhFavorita = false },
+        //         new() { Id = "6", Nome = "Sweet Child O' Mine", Artista = "Guns N' Roses", Album = "Appetite for Destruction", Duracao = "5:56", CapaUrl = "https://picsum.photos/40/40?random=6", DataAdicionada = DateTime.Now.AddDays(-5), EhFavorita = true },
+        //         new() { Id = "7", Nome = "Yesterday", Artista = "The Beatles", Album = "Help!", Duracao = "2:05", CapaUrl = "https://picsum.photos/40/40?random=7", DataAdicionada = DateTime.Now.AddDays(-4), EhFavorita = false },
+        //         new() { Id = "8", Nome = "Nothing Else Matters", Artista = "Metallica", Album = "Metallica", Duracao = "6:28", CapaUrl = "https://picsum.photos/40/40?random=8", DataAdicionada = DateTime.Now.AddDays(-3), EhFavorita = false },
+        //     }
+        // };
+
+        playlist = await _playlistsAppServico.ObterPorIdAsync(IdPlaylist);
     }
 
     private string CalcularDuracaoTotal()
@@ -395,27 +399,24 @@
     {
         if (playlist.Musicas.Count > 0)
         {
-            musicaTocando = playlist.Musicas.First();
+            //musicaTocando = playlist.Musicas.First();
             Console.WriteLine($"Tocando todas as músicas da playlist: {playlist.Nome}");
         }
     }
 
-    private void PlayMusica(MusicaDetalheModel musica)
+    private void PlayMusica(MusicaListarResponse musica)
     {
-        musicaTocando = musica;
-        Console.WriteLine($"Tocando: {musica.Nome} - {musica.Artista}");
+        Console.WriteLine($"Tocando: {musica.Nome} - {musica.Album.Artista.Nome}");
     }
 
     private void ToggleFavorito()
     {
-        playlist.EhFavorita = !playlist.EhFavorita;
-        Console.WriteLine($"Playlist {(playlist.EhFavorita ? "adicionada aos" : "removida dos")} favoritos");
+        Console.WriteLine($"Playlist {(true ? "adicionada aos" : "removida dos")} favoritos");
     }
 
-    private void ToggleFavoritoMusica(MusicaDetalheModel musica)
+    private void ToggleFavoritoMusica(MusicaListarResponse musica)
     {
-        musica.EhFavorita = !musica.EhFavorita;
-        Console.WriteLine($"Música {musica.Nome} {(musica.EhFavorita ? "adicionada aos" : "removida dos")} favoritos");
+        Console.WriteLine($"Música {musica.Nome} {(true ? "adicionada aos" : "removida dos")} favoritos");
     }
 
     private void Compartilhar()
@@ -435,9 +436,9 @@
         // TODO: Implementar confirmação e exclusão
     }
 
-    private void RemoverMusica(MusicaDetalheModel musica)
+    private void RemoverMusica(MusicaListarResponse musica)
     {
-        playlist.Musicas.Remove(musica);
+        //playlist.Musicas.Remove(musica);
         Console.WriteLine($"Música {musica.Nome} removida da playlist");
     }
 
@@ -459,7 +460,7 @@
 
     private class MusicaDetalheModel
     {
-        public string Id { get; set; } = string.Empty;
+        public int Id { get; set; }
         public string Nome { get; set; } = string.Empty;
         public string Artista { get; set; } = string.Empty;
         public string Album { get; set; } = string.Empty;

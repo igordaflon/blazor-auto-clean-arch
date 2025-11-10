@@ -13,14 +13,14 @@
             <AuthorizeView>
                 <div class="row align-items-end">
                     <div class="col-auto">
-                        <img src="@GravatarHelper.ObterGravatarUrl(context.User.Identity?.Name ?? "", 400)"
+                        <img src="@GravatarHelper.ObterGravatarUrl(context.User.ObterEmail(), 400)"
                              height="200"
                              width="200"
                              class="profile-image shadow-lg rounded-circle me-2" />
                     </div>
                     <div class="col">
                         <p class="text-white-50 mb-2 small text-uppercase fw-semibold">Perfil</p>
-                        <h1 class="display-3 fw-bold text-white mb-3">@context.User.Identity?.Name</h1>
+                        <h1 class="display-3 fw-bold text-white mb-3">@context.User.ObterNome()</h1>
                         <p class="text-white-50 mb-0">
                             <span class="fw-semibold">@quantidadePlaylists</span> playlists públicas
                         </p>
@@ -57,7 +57,7 @@
                         @foreach (var playlist in playlists)
                         {
                             <div class="col">
-                                <a href="@($"/playlist/{playlist.Nome}")" class="text-decoration-none">
+                                <a href="@($"/playlist/{playlist.Id}")" class="text-decoration-none">
                                     <div class="playlist-card bg-body-secondary rounded-3 p-3 h-100 transition-transform">
                                         <div class="playlist-cover mb-3 position-relative">
                                             <img src="https://picsum.photos/300/300?random=@playlist.Nome"
