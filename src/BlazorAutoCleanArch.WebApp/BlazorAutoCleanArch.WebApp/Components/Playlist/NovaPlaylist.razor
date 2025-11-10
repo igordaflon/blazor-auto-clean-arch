@@ -1,7 +1,13 @@
 ﻿@page "/usuario/{Id}/playlist/nova"
+@using System.ComponentModel.DataAnnotations
+@using BlazorAutoCleanArch.Aplicacao.DTOs.Requests
+@using BlazorAutoCleanArch.Aplicacao.Servicos.Interfaces
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
 @rendermode InteractiveServer
+@inject IPlaylistsAppServico PlaylistsAppServico
+@inject NavigationManager NavigationManager
+@inject ILogger<NovaPlaylist> Logger
 
 <style>
     article.px-4 {
@@ -54,6 +60,12 @@
             box-shadow: 0 0 0 0.2rem rgba(81, 43, 212, 0.25);
             color: white !important;
         }
+
+    .validation-message {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
 
     .nav-tabs {
         border-bottom: 1px solid #252a3a;
@@ -179,6 +191,11 @@
             text-decoration: underline;
         }
 
+    .alert-danger {
+        background-color: rgba(220, 53, 69, 0.1);
+        border: 1px solid #dc3545;
+        color: #ff6b6b;
+    }
 </style>
 
 <div class="criar-playlist-page">
@@ -200,182 +217,216 @@
     <!-- Conteúdo principal -->
     <div class="criar-playlist-content bg-dark">
         <div class="container-fluid px-5 py-5">
-            <div class="row">
-                <!-- Coluna da esquerda - Informações da Playlist -->
-                <div class="col-lg-4 mb-4">
-                    <div class="playlist-info-card bg-body-secondary rounded-3 p-4">
-                        <h3 class="h5 text-white mb-4">Informações da Playlist</h3>
+            @if (!string.IsNullOrEmpty(mensagemErro))
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    @mensagemErro
+                    <button type="button" class="btn-close" @onclick="() => mensagemErro = string.Empty"></button>
+                </div>
+            }
 
-                        <!-- Preview da capa -->
-                        <div class="playlist-cover-preview mb-4 text-center">
-                            <div class="cover-placeholder bg-gradient-primary rounded-2 mx-auto">
-                                <i class="bi bi-music-note-list text-white"></i>
+            <EditForm Model="@model" OnValidSubmit="@SalvarPlaylist">
+                <DataAnnotationsValidator />
+
+                <div class="row">
+                    <!-- Coluna da esquerda - Informações da Playlist -->
+                    <div class="col-lg-4 mb-4">
+                        <div class="playlist-info-card bg-body-secondary rounded-3 p-4">
+                            <h3 class="h5 text-white mb-4">Informações da Playlist</h3>
+
+                            <!-- Preview da capa -->
+                            <div class="playlist-cover-preview mb-4 text-center">
+                                <div class="cover-placeholder bg-gradient-primary rounded-2 mx-auto">
+                                    <i class="bi bi-music-note-list text-white"></i>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Nome da Playlist -->
-                        <div class="mb-4">
-                            <label for="playlistNome" class="form-label text-white-50 small">Nome da Playlist</label>
-                            <input type="text"
-                                   class="form-control form-control-lg bg-dark text-white border-0"
-                                   id="playlistNome"
-                                   @bind="playlistNome"
-                                   placeholder="Ex: Minhas Favoritas 2024"
-                                   maxlength="100" />
-                            <small class="text-white-50">@playlistNome.Length / 100</small>
-                        </div>
-
-                        <!-- Descrição -->
-                        <div class="mb-4">
-                            <label for="playlistDescricao" class="form-label text-white-50 small">Descrição (opcional)</label>
-                            <textarea class="form-control bg-dark text-white border-0"
-                                      id="playlistDescricao"
-                                      @bind="playlistDescricao"
-                                      rows="3"
-                                      placeholder="Descreva sua playlist..."
-                                      maxlength="300"></textarea>
-                            <small class="text-white-50">@playlistDescricao.Length / 300</small>
-                        </div>
-
-                        <!-- Botões de ação -->
-                        <div class="d-grid gap-2">
-                            <button class="btn btn-primary btn-lg rounded-pill"
-                                    @onclick="SalvarPlaylist"
-                                    disabled="@(string.IsNullOrWhiteSpace(playlistNome) || musicasSelecionadas.Count == 0)">
-                                <i class="bi bi-check-circle me-2"></i>
-                                Criar Playlist
-                            </button>
-                            <button class="btn btn-outline-secondary rounded-pill" @onclick="Cancelar">
-                                Cancelar
-                            </button>
-                        </div>
-
-                        <!-- Estatísticas -->
-                        <div class="mt-4 pt-4 border-top border-secondary">
-                            <div class="d-flex justify-content-between text-white-50 small mb-2">
-                                <span>Músicas adicionadas:</span>
-                                <span class="text-white fw-semibold">@musicasSelecionadas.Count</span>
+                            <!-- Nome da Playlist -->
+                            <div class="mb-4">
+                                <label for="playlistNome" class="form-label text-white-50 small">Nome da Playlist</label>
+                                <InputText id="playlistNome"
+                                           class="form-control form-control-lg bg-dark text-white border-0"
+                                           @bind-Value="model.Nome"
+                                           placeholder="Ex: Minhas Favoritas 2024"
+                                           maxlength="100" />
+                                <small class="text-white-50">@(model.Nome?.Length ?? 0) / 100</small>
+                                <ValidationMessage For="@(() => model.Nome)" class="validation-message" />
                             </div>
-                            <div class="d-flex justify-content-between text-white-50 small">
-                                <span>Duração total:</span>
-                                <span class="text-white fw-semibold">@CalcularDuracaoTotal()</span>
+
+                            <!-- Descrição -->
+                            <div class="mb-4">
+                                <label for="playlistDescricao" class="form-label text-white-50 small">Descrição (opcional)</label>
+                                <InputTextArea id="playlistDescricao"
+                                               class="form-control bg-dark text-white border-0"
+                                               @bind-Value="model.Descricao"
+                                               rows="3"
+                                               placeholder="Descreva sua playlist..."
+                                               maxlength="300" />
+                                <small class="text-white-50">@(model.Descricao?.Length ?? 0) / 300</small>
+                            </div>
+
+                            <!-- Botões de ação -->
+                            <div class="d-grid gap-2">
+                                <button type="submit"
+                                        class="btn btn-primary btn-lg rounded-pill">
+                                    @if (salvando)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        <span>Salvando...</span>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-check-circle me-2"></i>
+                                        <span>Criar Playlist</span>
+                                    }
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary rounded-pill" @onclick="Cancelar" disabled="@salvando">
+                                    Cancelar
+                                </button>
+                            </div>
+
+                            <!-- Estatísticas -->
+                            <div class="mt-4 pt-4 border-top border-secondary">
+                                <div class="d-flex justify-content-between text-white-50 small mb-2">
+                                    <span>Músicas adicionadas:</span>
+                                    <span class="text-white fw-semibold">@musicasSelecionadas.Count</span>
+                                </div>
+                                <div class="d-flex justify-content-between text-white-50 small">
+                                    <span>Duração total:</span>
+                                    <span class="text-white fw-semibold">@CalcularDuracaoTotal()</span>
+                                </div>
+                                @if (musicasSelecionadas.Count == 0)
+                                {
+                                    <div class="mt-2">
+                                        <small class="text-danger">
+                                            <i class="bi bi-exclamation-circle me-1"></i>
+                                            Adicione ao menos uma música
+                                        </small>
+                                    </div>
+                                }
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Coluna da direita - Adicionar Músicas -->
-                <div class="col-lg-8">
-                    <div class="musicas-section">
-                        <!-- Barra de busca -->
-                        <div class="search-bar mb-4">
-                            <div class="input-group input-group-lg">
-                                <span class="input-group-text bg-dark border-0">
-                                    <i class="bi bi-search text-white-50"></i>
-                                </span>
-                                <input type="text"
-                                       class="form-control bg-dark text-white border-0"
-                                       placeholder="Buscar músicas, artistas ou álbuns..."
-                                       @bind="termoBusca"
-                                       @bind:event="oninput" />
+                    <!-- Coluna da direita - Adicionar Músicas -->
+                    <div class="col-lg-8">
+                        <div class="musicas-section">
+                            <!-- Barra de busca -->
+                            <div class="search-bar mb-4">
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text bg-dark border-0">
+                                        <i class="bi bi-search text-white-50"></i>
+                                    </span>
+                                    <input type="text"
+                                           class="form-control bg-dark text-white border-0"
+                                           placeholder="Buscar músicas, artistas ou álbuns..."
+                                           @bind="termoBusca"
+                                           @bind:event="oninput" />
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Abas -->
-                        <ul class="nav nav-tabs border-0 mb-4">
-                            <li class="nav-item">
-                                <button class="nav-link @(abaAtiva == "buscar" ? "active" : "")"
-                                        @onclick='() => abaAtiva = "buscar"'>
-                                    <i class="bi bi-search me-2"></i>Buscar Músicas
-                                </button>
-                            </li>
-                            <li class="nav-item">
-                                <button class="nav-link @(abaAtiva == "selecionadas" ? "active" : "")"
-                                        @onclick='() => abaAtiva = "selecionadas"'>
-                                    <i class="bi bi-music-note-list me-2"></i>
-                                    Selecionadas (@musicasSelecionadas.Count)
-                                </button>
-                            </li>
-                        </ul>
+                            <!-- Abas -->
+                            <ul class="nav nav-tabs border-0 mb-4">
+                                <li class="nav-item">
+                                    <button type="button"
+                                            class="nav-link @(abaAtiva == "buscar" ? "active" : "")"
+                                            @onclick='() => abaAtiva = "buscar"'>
+                                        <i class="bi bi-search me-2"></i>Buscar Músicas
+                                    </button>
+                                </li>
+                                <li class="nav-item">
+                                    <button type="button"
+                                            class="nav-link @(abaAtiva == "selecionadas" ? "active" : "")"
+                                            @onclick='() => abaAtiva = "selecionadas"'>
+                                        <i class="bi bi-music-note-list me-2"></i>
+                                        Selecionadas (@musicasSelecionadas.Count)
+                                    </button>
+                                </li>
+                            </ul>
 
-                        <!-- Conteúdo das abas -->
-                        @if (abaAtiva == "buscar")
-                        {
-                            <div class="musicas-lista">
-                                @if (string.IsNullOrWhiteSpace(termoBusca))
-                                {
-                                    <div class="text-center py-5">
-                                        <i class="bi bi-music-note-beamed display-1 text-white-50"></i>
-                                        <p class="text-white-50 mt-3">Digite algo para buscar músicas</p>
-                                    </div>
-                                }
-                                else
-                                {
-                                    @foreach (var musica in MusicasFiltradas())
+                            <!-- Conteúdo das abas -->
+                            @if (abaAtiva == "buscar")
+                            {
+                                <div class="musicas-lista">
+                                    @if (string.IsNullOrWhiteSpace(termoBusca))
                                     {
-                                        <div class="musica-item bg-body-secondary rounded-3 p-3 mb-2 d-flex align-items-center">
-                                            <img src="@musica.CapaUrl" alt="@musica.Nome" class="musica-capa rounded me-3" />
-                                            <div class="flex-grow-1">
-                                                <h6 class="text-white mb-1">@musica.Nome</h6>
-                                                <p class="text-white-50 small mb-0">@musica.Artista • @musica.Album</p>
-                                            </div>
-                                            <span class="text-white-50 me-3">@musica.Duracao</span>
-                                            @if (musicasSelecionadas.Any(m => m.Id == musica.Id))
-                                            {
-                                                <button class="btn btn-outline-danger rounded-pill btn-sm"
-                                                        @onclick="() => RemoverMusica(musica)">
-                                                    <i class="bi bi-check-circle-fill me-1"></i>Adicionada
-                                                </button>
-                                            }
-                                            else
-                                            {
-                                                <button class="btn btn-outline-primary rounded-pill btn-sm"
-                                                        @onclick="() => AdicionarMusica(musica)">
-                                                    <i class="bi bi-plus-circle me-1"></i>Adicionar
-                                                </button>
-                                            }
+                                        <div class="text-center py-5">
+                                            <i class="bi bi-music-note-beamed display-1 text-white-50"></i>
+                                            <p class="text-white-50 mt-3">Digite algo para buscar músicas</p>
                                         </div>
                                     }
-                                }
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="musicas-lista">
-                                @if (musicasSelecionadas.Count == 0)
-                                {
-                                    <div class="text-center py-5">
-                                        <i class="bi bi-music-note-list display-1 text-white-50"></i>
-                                        <p class="text-white-50 mt-3">Nenhuma música adicionada ainda</p>
-                                        <button class="btn btn-primary rounded-pill" @onclick='() => abaAtiva = "buscar"'>
-                                            Buscar Músicas
-                                        </button>
-                                    </div>
-                                }
-                                else
-                                {
-                                    @foreach (var musica in musicasSelecionadas)
+                                    else
                                     {
-                                        <div class="musica-item bg-body-secondary rounded-3 p-3 mb-2 d-flex align-items-center">
-                                            <span class="text-white-50 me-3">@(musicasSelecionadas.IndexOf(musica) + 1)</span>
-                                            <img src="@musica.CapaUrl" alt="@musica.Nome" class="musica-capa rounded me-3" />
-                                            <div class="flex-grow-1">
-                                                <h6 class="text-white mb-1">@musica.Nome</h6>
-                                                <p class="text-white-50 small mb-0">@musica.Artista • @musica.Album</p>
+                                        @foreach (var musica in MusicasFiltradas())
+                                        {
+                                            <div class="musica-item bg-body-secondary rounded-3 p-3 mb-2 d-flex align-items-center">
+                                                <img src="@musica.CapaUrl" alt="@musica.Nome" class="musica-capa rounded me-3" />
+                                                <div class="flex-grow-1">
+                                                    <h6 class="text-white mb-1">@musica.Nome</h6>
+                                                    <p class="text-white-50 small mb-0">@musica.Artista • @musica.Album</p>
+                                                </div>
+                                                <span class="text-white-50 me-3">@musica.Duracao</span>
+                                                @if (musicasSelecionadas.Any(m => m.Id == musica.Id))
+                                                {
+                                                    <button type="button"
+                                                            class="btn btn-outline-danger rounded-pill btn-sm"
+                                                            @onclick="() => RemoverMusica(musica)">
+                                                        <i class="bi bi-check-circle-fill me-1"></i>Adicionada
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <button type="button"
+                                                            class="btn btn-outline-primary rounded-pill btn-sm"
+                                                            @onclick="() => AdicionarMusica(musica)">
+                                                        <i class="bi bi-plus-circle me-1"></i>Adicionar
+                                                    </button>
+                                                }
                                             </div>
-                                            <span class="text-white-50 me-3">@musica.Duracao</span>
-                                            <button class="btn btn-outline-danger rounded-pill btn-sm"
-                                                    @onclick="() => RemoverMusica(musica)">
-                                                <i class="bi bi-x-circle me-1"></i>Remover
+                                        }
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="musicas-lista">
+                                    @if (musicasSelecionadas.Count == 0)
+                                    {
+                                        <div class="text-center py-5">
+                                            <i class="bi bi-music-note-list display-1 text-white-50"></i>
+                                            <p class="text-white-50 mt-3">Nenhuma música adicionada ainda</p>
+                                            <button type="button" class="btn btn-primary rounded-pill" @onclick='() => abaAtiva = "buscar"'>
+                                                Buscar Músicas
                                             </button>
                                         </div>
                                     }
-                                }
-                            </div>
-                        }
+                                    else
+                                    {
+                                        @foreach (var musica in musicasSelecionadas)
+                                        {
+                                            <div class="musica-item bg-body-secondary rounded-3 p-3 mb-2 d-flex align-items-center">
+                                                <span class="text-white-50 me-3">@(musicasSelecionadas.IndexOf(musica) + 1)</span>
+                                                <img src="@musica.CapaUrl" alt="@musica.Nome" class="musica-capa rounded me-3" />
+                                                <div class="flex-grow-1">
+                                                    <h6 class="text-white mb-1">@musica.Nome</h6>
+                                                    <p class="text-white-50 small mb-0">@musica.Artista • @musica.Album</p>
+                                                </div>
+                                                <span class="text-white-50 me-3">@musica.Duracao</span>
+                                                <button type="button"
+                                                        class="btn btn-outline-danger rounded-pill btn-sm"
+                                                        @onclick="() => RemoverMusica(musica)">
+                                                    <i class="bi bi-x-circle me-1"></i>Remover
+                                                </button>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            }
+                        </div>
                     </div>
                 </div>
-            </div>
+            </EditForm>
         </div>
     </div>
 </div>
@@ -384,10 +435,11 @@
     [Parameter]
     public string Id { get; set; } = string.Empty;
 
-    private string playlistNome = "";
-    private string playlistDescricao = "";
+    private PlaylistInserirRequest model = new();
     private string termoBusca = "";
     private string abaAtiva = "buscar";
+    private string mensagemErro = string.Empty;
+    private bool salvando = false;
     private List<MusicaModel> musicasDisponiveis = new();
     private List<MusicaModel> musicasSelecionadas = new();
 
@@ -401,14 +453,14 @@
         // TODO: Implementar carregamento de músicas da API
         musicasDisponiveis = new List<MusicaModel>
         {
-            new() { Id = "1", Nome = "Bohemian Rhapsody", Artista = "Queen", Album = "A Night at the Opera", Duracao = "5:55", CapaUrl = "https://picsum.photos/56/56?random=1" },
-            new() { Id = "2", Nome = "Stairway to Heaven", Artista = "Led Zeppelin", Album = "Led Zeppelin IV", Duracao = "8:02", CapaUrl = "https://picsum.photos/56/56?random=2" },
-            new() { Id = "3", Nome = "Hotel California", Artista = "Eagles", Album = "Hotel California", Duracao = "6:30", CapaUrl = "https://picsum.photos/56/56?random=3" },
-            new() { Id = "4", Nome = "Imagine", Artista = "John Lennon", Album = "Imagine", Duracao = "3:03", CapaUrl = "https://picsum.photos/56/56?random=4" },
-            new() { Id = "5", Nome = "Smells Like Teen Spirit", Artista = "Nirvana", Album = "Nevermind", Duracao = "5:01", CapaUrl = "https://picsum.photos/56/56?random=5" },
-            new() { Id = "6", Nome = "Sweet Child O' Mine", Artista = "Guns N' Roses", Album = "Appetite for Destruction", Duracao = "5:56", CapaUrl = "https://picsum.photos/56/56?random=6" },
-            new() { Id = "7", Nome = "Yesterday", Artista = "The Beatles", Album = "Help!", Duracao = "2:05", CapaUrl = "https://picsum.photos/56/56?random=7" },
-            new() { Id = "8", Nome = "Nothing Else Matters", Artista = "Metallica", Album = "Metallica", Duracao = "6:28", CapaUrl = "https://picsum.photos/56/56?random=8" },
+            new() { Id = 1, Nome = "Bohemian Rhapsody", Artista = "Queen", Album = "A Night at the Opera", Duracao = "5:55", CapaUrl = "https://picsum.photos/56/56?random=1" },
+            new() { Id = 2, Nome = "Stairway to Heaven", Artista = "Led Zeppelin", Album = "Led Zeppelin IV", Duracao = "8:02", CapaUrl = "https://picsum.photos/56/56?random=2" },
+            new() { Id = 3, Nome = "Hotel California", Artista = "Eagles", Album = "Hotel California", Duracao = "6:30", CapaUrl = "https://picsum.photos/56/56?random=3" },
+            new() { Id = 4, Nome = "Imagine", Artista = "John Lennon", Album = "Imagine", Duracao = "3:03", CapaUrl = "https://picsum.photos/56/56?random=4" },
+            new() { Id = 5, Nome = "Smells Like Teen Spirit", Artista = "Nirvana", Album = "Nevermind", Duracao = "5:01", CapaUrl = "https://picsum.photos/56/56?random=5" },
+            new() { Id = 6, Nome = "Sweet Child O' Mine", Artista = "Guns N' Roses", Album = "Appetite for Destruction", Duracao = "5:56", CapaUrl = "https://picsum.photos/56/56?random=6" },
+            new() { Id = 7, Nome = "Yesterday", Artista = "The Beatles", Album = "Help!", Duracao = "2:05", CapaUrl = "https://picsum.photos/56/56?random=7" },
+            new() { Id = 8, Nome = "Nothing Else Matters", Artista = "Metallica", Album = "Metallica", Duracao = "6:28", CapaUrl = "https://picsum.photos/56/56?random=8" },
         };
     }
 
@@ -444,31 +496,50 @@
             return "0:00";
 
         // Simplificado - em produção, calcular duração real
-        var totalMinutos = musicasSelecionadas.Count * 4; // média de 4 minutos por música
+        var totalMinutos = musicasSelecionadas.Count * 4;
         return $"{totalMinutos}:00";
     }
 
-    private void SalvarPlaylist()
+    private async Task SalvarPlaylist()
     {
-        // TODO: Implementar salvamento da playlist na API
-        Console.WriteLine($"Salvando playlist: {playlistNome}");
-        Console.WriteLine($"Descrição: {playlistDescricao}");
-        Console.WriteLine($"Músicas: {musicasSelecionadas.Count}");
+        if (musicasSelecionadas.Count == 0)
+        {
+            mensagemErro = "Adicione ao menos uma música à playlist.";
+            return;
+        }
 
-        // Redirecionar para a página de perfil
-        // NavigationManager.NavigateTo("/usuario/perfil");
+        try
+        {
+            salvando = true;
+            mensagemErro = string.Empty;
+
+            model.MusicasId = musicasSelecionadas.Select(m => m.Id).ToList();
+
+            await PlaylistsAppServico.InserirAsync(model, Id);
+
+            Logger.LogInformation("Playlist '{Nome}' criada com sucesso para o usuário {UsuarioId}", model.Nome, Id);
+
+            NavigationManager.NavigateTo("/usuario/perfil");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Erro ao salvar playlist: {Nome}", model.Nome);
+            mensagemErro = "Erro ao criar playlist. Por favor, tente novamente.";
+        }
+        finally
+        {
+            salvando = false;
+        }
     }
 
     private void Cancelar()
     {
-        // TODO: Implementar navegação para página anterior
-        // NavigationManager.NavigateTo("/usuario/perfil");
-        Console.WriteLine("Cancelar criação de playlist");
+        NavigationManager.NavigateTo("/usuario/perfil");
     }
 
     private class MusicaModel
     {
-        public string Id { get; set; } = string.Empty;
+        public int Id { get; set; }
         public string Nome { get; set; } = string.Empty;
         public string Artista { get; set; } = string.Empty;
         public string Album { get; set; } = string.Empty;

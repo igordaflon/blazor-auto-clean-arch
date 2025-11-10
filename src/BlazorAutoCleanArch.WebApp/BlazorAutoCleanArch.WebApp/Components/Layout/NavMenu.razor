@@ -1,6 +1,8 @@
 ﻿@implements IDisposable
 @using BlazorAutoCleanArch.WebApp.Helpers
+@using System.Security.Claims
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
@@ -20,7 +22,7 @@
         <AuthorizeView>
             <Authorized>
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="usuario/685f246a-d50f-4656-a845-11e4b7d60fb5/perfil">
+                    <NavLink class="nav-link" href="@($"usuario/{usuarioId}/perfil")">
                         <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> Meu Perfil
                     </NavLink>
                 </div>
@@ -69,11 +71,22 @@
 
 @code {
     private string? currentUrl;
+    private string usuarioId = string.Empty;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
         NavigationManager.LocationChanged += OnLocationChanged;
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            usuarioId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                  ?? user.FindFirst("sub")?.Value
+                  ?? string.Empty;
+        }
     }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)

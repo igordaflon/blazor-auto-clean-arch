@@ -44,6 +44,7 @@ builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSe
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IPlaylistsAppServico, PlaylistsAppServico>();
 builder.Services.AddScoped<IPlaylistsRepositorio, PlaylistsRepositorio>();
+builder.Services.AddScoped<IMusicasRepositorio, MusicasRepositorio>();
 
 builder.Services.AddAutoMapper(typeof(PlaylistsAppServico).Assembly);
 

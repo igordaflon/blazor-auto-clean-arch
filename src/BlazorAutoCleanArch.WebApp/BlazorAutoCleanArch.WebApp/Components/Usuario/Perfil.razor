@@ -1,12 +1,12 @@
 ﻿@page "/usuario/{Id}/perfil"
-@using BlazorAutoCleanArch.WebApp.Helpers
-@using Microsoft.AspNetCore.Authorization
-@using Microsoft.AspNetCore.Components
+@using BlazorAutoCleanArch.Aplicacao.DTOs.Responses
 @attribute [Authorize]
 @inject NavigationManager NavigationManager
+@inject IPlaylistsAppServico PlaylistsAppServico
 @rendermode InteractiveServer
 
 <div class="profile-page">
+
     <!-- Header com foto de perfil e nome -->
     <div class="profile-header bg-gradient p-5">
         <div class="container-fluid px-5">
@@ -22,7 +22,7 @@
                         <p class="text-white-50 mb-2 small text-uppercase fw-semibold">Perfil</p>
                         <h1 class="display-3 fw-bold text-white mb-3">@context.User.Identity?.Name</h1>
                         <p class="text-white-50 mb-0">
-                            <span class="fw-semibold">@playlistCount</span> playlists públicas
+                            <span class="fw-semibold">@quantidadePlaylists</span> playlists públicas
                         </p>
                     </div>
                 </div>
@@ -35,45 +35,52 @@
         <div class="container-fluid px-5 py-4">
             <!-- Botão criar playlist -->
             <div class="mb-4">
-                <button class="btn btn-primary btn-lg rounded-pill px-4"
-                        @onclick="CriarPlaylist">
+                <a class="btn btn-primary btn-lg rounded-pill px-4" href="@($"/usuario/{Id}/playlist/nova")">
                     <i class="bi bi-plus-circle me-2"></i>
                     Criar Playlist
-                </button>
+                </a>
             </div>
 
             <!-- Grid de playlists -->
             <div class="playlists-section">
                 <h2 class="h4 text-white mb-4">Playlists Públicas</h2>
-                <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 row-cols-xxl-6 g-4">
-                    @foreach (var playlist in playlists)
-                    {
-                        <div class="col">
-                            <a href="@($"/playlist/{playlist.Id}")" class="text-decoration-none">
-                                <div class="playlist-card bg-body-secondary rounded-3 p-3 h-100
-                                                                        transition-transform">
-                                    <div class="playlist-cover mb-3 position-relative">
-                                        <img src="@playlist.ImageUrl"
-                                             alt="@playlist.Nome"
-                                             class="w-100 rounded-2 shadow" />
-                                        <div class="play-button position-absolute bottom-0 end-0 m-2
-                                                                                opacity-0 transition-opacity">
-                                            <div class="btn btn-primary rounded-circle p-3 shadow">
-                                                <i class="bi bi-play-fill fs-5"></i>
+                @if (playlists.Count == 0)
+                {
+                    <div class="text-center text-white-50 py-5">
+                        <i class="bi bi-music-note-list fs-1 mb-3"></i>
+                        <p>Nenhuma playlist encontrada</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 row-cols-xxl-6 g-4">
+                        @foreach (var playlist in playlists)
+                        {
+                            <div class="col">
+                                <a href="@($"/playlist/{playlist.Nome}")" class="text-decoration-none">
+                                    <div class="playlist-card bg-body-secondary rounded-3 p-3 h-100 transition-transform">
+                                        <div class="playlist-cover mb-3 position-relative">
+                                            <img src="https://picsum.photos/300/300?random=@playlist.Nome"
+                                                 alt="@playlist.Nome"
+                                                 class="w-100 rounded-2 shadow" />
+                                            <div class="play-button position-absolute bottom-0 end-0 m-2 opacity-0 transition-opacity">
+                                                <div class="btn btn-primary rounded-circle p-3 shadow">
+                                                    <i class="bi bi-play-fill fs-5"></i>
+                                                </div>
                                             </div>
                                         </div>
+                                        <h3 class="h6 text-white fw-semibold mb-2 text-truncate">
+                                            @playlist.Nome
+                                        </h3>
+                                        <p class="small text-white-50 mb-0 playlist-description">
+                                            Teste descrição colocar aqui
+                                        </p>
                                     </div>
-                                    <h3 class="h6 text-white fw-semibold mb-2 text-truncate">
-                                        @playlist.Nome
-                                    </h3>
-                                    <p class="small text-white-50 mb-0 playlist-description">
-                                        @playlist.Descricao
-                                    </p>
-                                </div>
-                            </a>
-                        </div>
-                    }
-                </div>
+                                </a>
+                            </div>
+                        }
+                    </div>
+                }
             </div>
         </div>
     </div>
@@ -175,40 +182,24 @@
     [Parameter]
     public string Id { get; set; } = string.Empty;
 
-    private int playlistCount = 0;
-    private List<PlaylistModel> playlists = new();
+    private int quantidadePlaylists = 0;
+    private IReadOnlyList<PlaylistListarResponse>? playlists;
 
-    protected override void OnInitialized()
+    protected override async Task OnParametersSetAsync()
     {
-        LoadPlaylists();
+        await CarregarPlaylistsAsync();
     }
 
-    private void LoadPlaylists()
+    private async Task CarregarPlaylistsAsync()
     {
-        // TODO: Implementar carregamento de playlists da API
-        // Dados de exemplo
-        playlists = new List<PlaylistModel>
+        try
         {
-            new() { Id = "1", Nome = "Músicas Favoritas", Descricao = "Minhas músicas preferidas", ImageUrl = "https://picsum.photos/300/300?random=1" },
-            new() { Id = "2", Nome = "Rock Clássico", Descricao = "Os melhores do rock", ImageUrl = "https://picsum.photos/300/300?random=2" },
-            new() { Id = "3", Nome = "Chill Vibes", Descricao = "Para relaxar", ImageUrl = "https://picsum.photos/300/300?random=3" },
-            new() { Id = "4", Nome = "Workout", Descricao = "Energia para treinar", ImageUrl = "https://picsum.photos/300/300?random=4" },
-            new() { Id = "5", Nome = "Jazz Instrumental", Descricao = "Jazz suave", ImageUrl = "https://picsum.photos/300/300?random=5" },
-        };
-
-        playlistCount = playlists.Count;
-    }
-
-    private void CriarPlaylist()
-    {
-        NavigationManager.NavigateTo($"/usuario/{Id}/playlist/nova");
-    }
-
-    private class PlaylistModel
-    {
-        public string Id { get; set; }
-        public string Nome { get; set; }
-        public string Descricao { get; set; }
-        public string ImageUrl { get; set; }
+            playlists = await PlaylistsAppServico.ListarPlaylistsDoUsuarioAsync(Id);
+            quantidadePlaylists = playlists.Count;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Erro ao carregar playlists: {ex.Message}");
+        }
     }
 }

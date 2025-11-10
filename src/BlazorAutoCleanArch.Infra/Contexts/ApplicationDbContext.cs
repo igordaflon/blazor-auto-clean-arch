@@ -6,11 +6,7 @@ namespace BlazorAutoCleanArch.Infra.Contexts;
 
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
-    {
-        ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-        ChangeTracker.AutoDetectChangesEnabled = false;
-    }
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options){}
 
     public DbSet<Artista> Artistas { get; set; }
     public DbSet<Album> Albums { get; set; }
