@@ -3,7 +3,7 @@
 @attribute [Authorize]
 @inject NavigationManager NavigationManager
 @inject IPlaylistsAppServico PlaylistsAppServico
-@rendermode InteractiveServer
+@attribute [StreamRendering]
 
 <div class="profile-page">
 
@@ -44,7 +44,15 @@
             <!-- Grid de playlists -->
             <div class="playlists-section">
                 <h2 class="h4 text-white mb-4">Playlists Públicas</h2>
-                @if (playlists.Count == 0)
+                @if (playlists == null)
+                {
+                    <div class="d-flex justify-content-center align-items-center py-5" style="min-height: 200px;">
+                        <div class="spinner-grow" style="width: 3rem; height: 3rem;" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                }
+                else if (playlists.Count == 0)
                 {
                     <div class="text-center text-white-50 py-5">
                         <i class="bi bi-music-note-list fs-1 mb-3"></i>
@@ -194,6 +202,7 @@
     {
         try
         {
+			await Task.Delay(5000);
             playlists = await PlaylistsAppServico.ListarPlaylistsDoUsuarioAsync(Id);
             quantidadePlaylists = playlists.Count;
         }
